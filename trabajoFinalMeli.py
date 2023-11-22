@@ -1,5 +1,6 @@
 from tkinter import *
 from tkinter import ttk
+from tkinter import messagebox
 from PIL import ImageTk, Image
 
 #COLORES
@@ -7,9 +8,14 @@ fondoContendio = "#D5CABD"
 
 #VARIABLES
 tituloCabecera = "Mi dia"
+tipo_selected = ""
+lista = []
+
 
 def mostrar_seccion(seccion):
     # Oculta todas las secciones
+    cabeceraContenidoFrame.grid(row=0, column=1, sticky="nswe")
+    seccionContenidoFrame.grid(row=1, column=1, sticky="nsew")
     for frame in secciones_contenido:
         frame.grid_forget()
     # Muestra la sección deseada
@@ -20,6 +26,10 @@ def mostrar_seccion(seccion):
         tituloCabecera = "Importante"
     elif seccion == 2:
         tituloCabecera = "Tareas"
+    else:
+        tituloCabecera = ""
+        cabeceraContenidoFrame.grid_forget()
+        seccionContenidoFrame.grid(row=0, column=1,rowspan=2, sticky="nsew")
     titleCabeceraLabel.config(text=tituloCabecera)
 
 def hover_btn_enter(event):
@@ -27,7 +37,6 @@ def hover_btn_enter(event):
         event.widget.config(bg='gray')  # Cambiar color de fondo al pasar el ratón
     else:
         event.widget.config(bg='#ADD19D')
-    
 
 def hover_btn_leave(event):
     if event.widget.cget('text') != 'Añadir':
@@ -35,10 +44,74 @@ def hover_btn_leave(event):
     else:
         event.widget.config(bg='#85BA6D')
 
+def on_checkbox_select(var, tipoSeleccionada):
+    if tipoSeleccionada == "diaria" and var.get() == 1:
+        nuevoClaseImportanteCheckBtn.deselect()
+        nuevoClaseTareaCheckBtn.deselect()
+        nuevoEspecialLabel.config(text="Importancia:")
+        tareaSelectedChBox.set = 0
+        importanteSelectedChBox.set = 0
+    elif tipoSeleccionada == "importante" and var.get() == 1:
+        nuevoClaseDiariaCheckBtn.deselect()
+        nuevoClaseTareaCheckBtn.deselect()
+        nuevoEspecialLabel.config(text="Fecha Limite:")
+        diariaSelectedChBox.set = 0
+        tareaSelectedChBox.set = 0
+    elif tipoSeleccionada == "tarea" and var.get() == 1:
+        nuevoClaseDiariaCheckBtn.deselect()
+        nuevoClaseImportanteCheckBtn.deselect()
+        nuevoEspecialLabel.config(text="Frecuencia:")
+        diariaSelectedChBox.set = 0
+        importanteSelectedChBox.set = 0
+
+def add_new_task():
+    guardarTitulo = tituloVar.get()
+    guardarDescripcion = descripcionVar.get()
+    guardarEspecial = espcialVar.get()
+
+    if diariaSelectedChBox.get() == 1:
+        guardarTipo = "diaria"
+    elif importanteSelectedChBox.get() == 1:
+        guardarTipo = "importante"
+    elif tareaSelectedChBox.get() == 1:
+        guardarTipo = "tarea"
+    
+    lista.append(guardarTitulo + "$" + guardarDescripcion + "$" + guardarEspecial + "$" +  guardarTipo)
+    escribirContacto()
+    messagebox.showinfo("Guardado", "El contacto ha sido guardado en la agenda")
+    tituloVar.set("")
+    descripcionVar.set("")
+    espcialVar.set("")
+    diariaSelectedChBox.set = 0
+    importanteSelectedChBox.set = 0
+    tareaSelectedChBox.set = 0
+    consultar()
+
+def escribirContacto():
+    archivo = open("bd.txt", "w")
+    lista.sort()
+    for elemento in lista:
+        archivo.write(elemento + "\n")
+    archivo.close()
+
+def consultar():
+    print(lista)
+
 
 ventanaPrincipal = Tk()
 ventanaPrincipal.title = "App To Do"
 ventanaPrincipal.geometry("800x400")
+#variables
+diariaSelectedChBox = IntVar()
+importanteSelectedChBox = IntVar()
+tareaSelectedChBox = IntVar()
+
+tituloVar = StringVar()
+descripcionVar = StringVar()
+estadoVar = StringVar()
+espcialVar = StringVar()
+
+
 #--- configuracion grid-------
 ventanaPrincipal.columnconfigure(0, weight=2)
 ventanaPrincipal.columnconfigure(1, weight=8)
@@ -139,13 +212,54 @@ seccion_tareas = Frame(seccionContenidoFrame, bg=fondoContendio)
 seccion_tareas.grid(row=1, column=1, sticky="nsew")
 Label(seccion_tareas, text="Contenido de Tareas", font=("Arial", 14), bg=fondoContendio).pack()
 
+seccion_agregar = Frame(seccionContenidoFrame, bg=fondoContendio)
+seccion_agregar.grid(row=0, column=1, sticky="nsew")
+#region --Seccion agregar inicio --
+titleSeccionAgregar = Label(seccion_agregar, text="Añadiendo nueva tarea", font=("Arial", 14), bg=fondoContendio)
+titleSeccionAgregar.grid(row=0,column=0)
+
+nuevoTituloLabel = Label(seccion_agregar, text="Título:")
+nuevoTituloLabel.grid(row=1, column=0)
+nuevoTituloEntry = Entry(seccion_agregar, textvariable=tituloVar)
+nuevoTituloEntry.grid(row=1, column=1, columnspan=3, sticky="ew")
+
+nuevoDescripciomLabel = Label(seccion_agregar, text="Descripcion:")
+nuevoDescripciomLabel.grid(row=2, column=0)
+nuevoDescripciomEntry = Entry(seccion_agregar, textvariable=descripcionVar)
+nuevoDescripciomEntry.grid(row=2, column=1, columnspan=3, sticky="ew")
+
+tipoLabel = Label(seccion_agregar, text="Tipo:")
+tipoLabel.grid(row=3)
+
+nuevoClaseDiariaCheckBtn = Checkbutton(seccion_agregar,  text="Diaria", variable=diariaSelectedChBox,
+                                       command=lambda: on_checkbox_select(diariaSelectedChBox, "diaria"))
+nuevoClaseDiariaCheckBtn.grid(row=3, column=1)
+
+nuevoClaseImportanteCheckBtn = Checkbutton(seccion_agregar, text="Importante", variable=importanteSelectedChBox,
+                                       command=lambda: on_checkbox_select(importanteSelectedChBox, "importante"))
+nuevoClaseImportanteCheckBtn.grid(row=3, column=2)
+
+nuevoClaseTareaCheckBtn = Checkbutton(seccion_agregar, text="Tarea", variable=tareaSelectedChBox,
+                                       command=lambda: on_checkbox_select(tareaSelectedChBox, "tarea"))
+nuevoClaseTareaCheckBtn.grid(row=3, column=3)
+
+nuevoEspecialLabel = Label(seccion_agregar, text="Importancia")
+nuevoEspecialLabel.grid(row=5, column=0)
+nuevoEspecialEntry = Entry(seccion_agregar, textvariable=espcialVar)
+nuevoEspecialEntry.grid(row=5, column=1, columnspan=3, sticky="ew")
+
+nuevoAgregarBtn = Button(seccion_agregar, text="Agregar", command=add_new_task)
+nuevoAgregarBtn.grid(row=6, column=1, columnspan=2, sticky="ew")
+#endregion --Seccion agregar  --
+
 # Lista de secciones de contenido
-secciones_contenido = [seccion_mi_dia, seccion_importante, seccion_tareas]
+secciones_contenido = [seccion_mi_dia, seccion_importante, seccion_tareas, seccion_agregar]
 
 # Asocia cada botón con la función mostrar_seccion y pasa el índice de la sección como argumento
 miDiaBtn.config(command=lambda: mostrar_seccion(0))
 importanteBtn.config(command=lambda: mostrar_seccion(1))
 tareasBtn.config(command=lambda: mostrar_seccion(2))
+agregarBtn.config(command=lambda: mostrar_seccion(3))
 
 # endregion------- Crear secciones de contenido
 

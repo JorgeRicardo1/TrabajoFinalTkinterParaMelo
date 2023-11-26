@@ -1,12 +1,3 @@
-Ejercicio$Salir a correr 8 kilimetros$2 veces por semana$tarea
-Hogar$Sacar basura$Alta$diaria
-Universidad$Trabajo de programacion$mañana$importante
-aa$aaa$aaa$diaria
-aaa$aaa$aaa$diaria
-bbb$bbb$bbb$importante
-bbbb$bbbb$bbb$diaria
-ccc$ccc$cccc$diaria
-ddd$ddd$ddd$diaria
-ggg$gggg$gggg$diaria
-jjjj$jjjjj$jjjjj$diaria
-zzz$zzz$bbbb$tarea
+vvvvv$vvvv$vvvv$diaria
+wwww$wwww$www$diaria
+xxxx$xxxx$z$importante

@@ -25,13 +25,13 @@ def mostrar_seccion(seccion, nombre):
     secciones_contenido[seccion].grid(row=1, column=1, sticky="nsew")
     if seccion == 0:
         tituloCabecera = "Mi dia"
-        actualizarLista(actividadesDiariasList, second_frameDiaria, 'prioridad')
+        actualizarLista(actividadesDiariasList, second_frameDiaria, 'prioridad:')
     elif seccion == 1:
         tituloCabecera = "Importante"
-        actualizarLista(actividadesImportantesList, second_frameImportante, 'fecha limite') 
+        actualizarLista(actividadesImportantesList, second_frameImportante, 'fecha limite:') 
     elif seccion == 2:
         tituloCabecera = "Tareas"
-        actualizarLista(actividadesTareasList, second_frameTareas, 'frecuencia') 
+        actualizarLista(actividadesTareasList, second_frameTareas, 'frecuencia:') 
     else:
         tituloCabecera = ""
         cabeceraContenidoFrame.grid_forget()
@@ -94,6 +94,9 @@ def add_new_task():
     consultar()
 
 def consultar():
+    actividadesDiariasList.clear()
+    actividadesImportantesList.clear()
+    actividadesTareasList.clear()
     for actividad in actividadesList:
         arreglo = actividad.split("$")
         if arreglo[3] == 'diaria':
@@ -108,23 +111,69 @@ def actualizarLista(listaActual, frame, especial):
         frame_actividad = Frame(frame, bd=2, relief=GROOVE)
         frame_actividad.grid(row=i, column=0, padx=5, pady=5, sticky="ew")
 
-        # Configurar evento de clic para mostrar la descripción
-        frame_actividad.bind("<Button-1>", lambda event, index=i: mostrar_descripcion(index))
+        frame_actividad.columnconfigure(0, weight=1)
+        frame_actividad.columnconfigure(1, weight=2)
+        frame_actividad.columnconfigure(2, weight=1)
+        frame_actividad.columnconfigure(3, weight=1)
 
         # Añadir contenido al frame
         tituloActividadLabel = Label(frame_actividad, text=actividad[0], font=("Arial", 12))
-        tituloActividadLabel.grid(row=0, column=0, sticky="ew")
+        tituloActividadLabel.grid(row=0, column=0)
 
         descripcionActividadLabel = Label(frame_actividad, text=actividad[1])
-        descripcionActividadLabel.grid(row=1, column=0)
+        descripcionActividadLabel.grid(row=1, column=0, sticky="ew")
         
+        espeDescripLabel = Label(frame_actividad, text=especial)
+        espeDescripLabel.grid(row=0, column=2)
+
         especialActividadLabel = Label(frame_actividad, text=actividad[2])
-        especialActividadLabel.grid(row=0, column=2)
+        especialActividadLabel.grid(row=0, column=3)
+
+        modificarBtn = Button(frame_actividad,text='Actualizar', relief=FLAT, background='green')
+        modificarBtn.grid(row=1, column=4)
+        modificarBtn.bind("<Button-1>", lambda event, index=i: actualizarActividad(index))
+
+        EliminarBtn = Button(frame_actividad,text='Eliminar', relief=FLAT, background='red')
+        EliminarBtn.grid(row=1, column=5)
+        EliminarBtn.bind("<Button-1>", lambda event, index=i: borrarActividad(index, listaActual))
 
 
 def mostrar_descripcion(index):
     print(index)
     #label_descripcion.config(text=f"Descripción: {actividad_seleccionada.descripcion}")
+
+def actualizarActividad(index):
+    print(index)
+
+def borrarActividad(index, listaActual):
+    print(index)
+    eliminado = index
+    removido = False
+    for elemento in actividadesList:
+        arreglo = elemento.split("$")
+        if listaActual[index] == arreglo:
+            actividadesList.remove(elemento)
+            removido = True
+    escribirActividad()
+    consultar()
+    # Destruir todos los widgets en el frame correspondiente
+    if listaActual is actividadesDiariasList:
+        for widget in second_frameDiaria.winfo_children():
+            widget.destroy()
+        actualizarLista(actividadesDiariasList, second_frameDiaria, 'prioridad:')
+    elif listaActual is actividadesImportantesList:
+        for widget in second_frameImportante.winfo_children():
+            widget.destroy()
+        actualizarLista(actividadesImportantesList, second_frameImportante, 'fecha limite:')
+    elif listaActual is actividadesTareasList:
+        for widget in second_frameTareas.winfo_children():
+            widget.destroy()
+        actualizarLista(actividadesTareasList, second_frameTareas, 'frecuencia:')
+
+    
+
+    if removido:
+        messagebox.showinfo("Eliminar", "Elemento eliminado ")
 
 #region --funciones para manipular el archivo de texto
 def escribirActividad():

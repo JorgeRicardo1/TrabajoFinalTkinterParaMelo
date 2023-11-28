@@ -97,6 +97,7 @@ def consultar():
     actividadesDiariasList.clear()
     actividadesImportantesList.clear()
     actividadesTareasList.clear()
+    actividadesList.sort()
     for actividad in actividadesList:
         arreglo = actividad.split("$")
         if arreglo[3] == 'diaria':
@@ -131,7 +132,7 @@ def actualizarLista(listaActual, frame, especial):
 
         modificarBtn = Button(frame_actividad,text='Actualizar', relief=FLAT, background='green')
         modificarBtn.grid(row=1, column=4)
-        modificarBtn.bind("<Button-1>", lambda event, index=i: actualizarActividad(index))
+        modificarBtn.bind("<Button-1>", lambda event, index=i: abrirActualizarActividad(index, listaActual))
 
         EliminarBtn = Button(frame_actividad,text='Eliminar', relief=FLAT, background='red')
         EliminarBtn.grid(row=1, column=5)
@@ -142,11 +143,65 @@ def mostrar_descripcion(index):
     print(index)
     #label_descripcion.config(text=f"Descripción: {actividad_seleccionada.descripcion}")
 
-def actualizarActividad(index):
-    print(index)
+def abrirActualizarActividad(index, listaActual):
+    ventanaSecundaria = Frame(ventanaPrincipal, bg='red')
+    ventanaSecundaria.columnconfigure(1, weight=1)
+    ventanaSecundaria.rowconfigure(1, weight=1)
+    ventanaSecundaria.grid(row=0, column=0, rowspan=2, columnspan=2,sticky='nwse')
+
+    modificarActividadFrame = Frame(ventanaSecundaria, bg=fondoContendio)
+    modificarActividadFrame.grid(row=1, column=1, sticky="nsew")
+    titleModificarActividad = Label(modificarActividadFrame, text="Modificando Actividad existente", font=("Arial", 14), bg=fondoContendio,
+                                    pady=20)
+    titleModificarActividad.grid(row=0,column=0)
+
+    modificarTituloLabel = Label(modificarActividadFrame, text="Nuevo Título:")
+    modificarTituloLabel.grid(row=1, column=0)
+    modificarEntry = Entry(modificarActividadFrame, textvariable=modificadoTituloVar)
+    modificarEntry.grid(row=1, column=1, columnspan=3, sticky="ew")
+
+    modificarDescripciomLabel = Label(modificarActividadFrame, text="Nueva Descripcion:")
+    modificarDescripciomLabel.grid(row=2, column=0)
+    modificarDescripciomEntry = Entry(modificarActividadFrame, textvariable=modificadoDescripcionVar)
+    modificarDescripciomEntry.grid(row=2, column=1, columnspan=3, sticky="ew")
+
+    modificarActividadBtn = Button(modificarActividadFrame,text='Modificar', relief=FLAT, background='green')
+    modificarActividadBtn.grid(row=3, column=0)
+    modificarActividadBtn.bind("<Button-1>", lambda event: actualizarActividad(index, listaActual, ventanaSecundaria))
+
+    cancelarModiActividadBtn = Button(modificarActividadFrame,text='cancelar', relief=FLAT, background='red')
+    cancelarModiActividadBtn.grid(row=3, column=1)
+    cancelarModiActividadBtn.bind("<Button-1>", lambda event: cancelarModificacion(ventanaSecundaria))
+
+
+def actualizarActividad(index, listaActual, frame):
+    for i, elemento in enumerate(actividadesList):
+        arreglo = elemento.split("$")
+        if listaActual[index] == arreglo:
+            actividadesList[i] = f"{modificadoDescripcionVar.get()}${modificadoTituloVar.get()}${arreglo[2]}${arreglo[3]}"
+    escribirActividad()
+    consultar()
+    # Destruir todos los widgets en el frame correspondiente
+    if listaActual is actividadesDiariasList:
+        for widget in second_frameDiaria.winfo_children():
+            widget.destroy()
+        actualizarLista(actividadesDiariasList, second_frameDiaria, 'prioridad:')
+    elif listaActual is actividadesImportantesList:
+        for widget in second_frameImportante.winfo_children():
+            widget.destroy()
+        actualizarLista(actividadesImportantesList, second_frameImportante, 'fecha limite:')
+    elif listaActual is actividadesTareasList:
+        for widget in second_frameTareas.winfo_children():
+            widget.destroy()
+        actualizarLista(actividadesTareasList, second_frameTareas, 'frecuencia:')
+    frame.destroy()
+    modificadoDescripcionVar.set("")
+    modificadoTituloVar.set("")
+
+def cancelarModificacion(frame):
+    frame.destroy()
 
 def borrarActividad(index, listaActual):
-    print(index)
     eliminado = index
     removido = False
     for elemento in actividadesList:
@@ -217,6 +272,9 @@ descripcionVar = StringVar()
 estadoVar = StringVar()
 espcialVar = StringVar()
 
+modificadoTituloVar = StringVar()
+modificadoDescripcionVar = StringVar()
+
 
 #--- configuracion grid-------
 ventanaPrincipal.columnconfigure(0, weight=2)
@@ -224,6 +282,7 @@ ventanaPrincipal.columnconfigure(1, weight=8)
 
 ventanaPrincipal.rowconfigure(0, weight=2)
 ventanaPrincipal.rowconfigure(1, weight=8)
+
 
 #region --------------inicio Menu lateral------------------
 menuLateralFrame = Frame(ventanaPrincipal, bd=2, relief="solid")

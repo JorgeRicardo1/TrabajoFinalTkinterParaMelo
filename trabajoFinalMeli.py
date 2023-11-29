@@ -2,6 +2,7 @@ from tkinter import *
 from tkinter import ttk
 from tkinter import messagebox
 from PIL import ImageTk, Image
+import modelos
 
 #COLORES
 fondoContendio = "#D5CABD" 
